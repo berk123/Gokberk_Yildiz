@@ -1,13 +1,16 @@
 #include <Arduino.h>
-#include "main.h"
+#include "Temp.h"
+
+#define RX_BUFFER_SIZE      10
 
 bool flag;
+String EchoWord;
 uint8_t GPIO_Pin3 = D9;
-#define RX_BUFFER_SIZE      10
-#define LED D5
 uint8_t rxbuffer[RX_BUFFER_SIZE];
-int CountH, CountL;
+int CountH=300;
+int CountL=700;
 
+// String Buffer;
 ////////////////////////////////////////////
 
 enum eSerialStates {
@@ -18,21 +21,13 @@ enum eSerialStates {
 enum eSerialStates eSerialState;
 
 /////////////////////////////////////////////
-void ICACHE_RAM_ATTR INTCALLBACK()
-{
-  if ( Serial.available() )
-    {
-        Serial.readBytes(rxbuffer, RX_BUFFER_SIZE);     
-    }
 
- 
-}
 
 void setup() {
 
   Serial.begin(115200);
+  install_uart_tout();
   pinMode(LED, OUTPUT);
-  attachInterrupt(digitalPinToInterrupt(GPIO_Pin3), INTCALLBACK, RISING);
 
 }
 
@@ -42,18 +37,48 @@ void loop() {
   switch ( eSerialState )
   {
 case Action:
-      
           OnOf(CountH,CountL);
-          if (flag==1)
-          {
+         
              eSerialState = TX_SEND_DATA;
 
-          }
+          
                    
       break;
     
 case TX_SEND_DATA:
+      
 
+      if (Buffer == "Stop")
+      {
+        CountH=1000;  CountL=1000;
+        Serial.println("burdası stop");
+        memset(&Buffer, 0, sizeof(Buffer));
+
+      }
+       else if (Buffer == "start")
+      {
+        CountH=1000;  CountL=1000;
+
+        Serial.println("Burası start");
+        memset(&Buffer, 0, sizeof(Buffer));
+
+      }
+       else if (Buffer == "ledon=500")
+      {
+        CountH=500;  
+
+        Serial.println("Burası LedOn");
+        memset(&Buffer, 0, sizeof(Buffer));
+
+      }
+        else if (Buffer == "ledoff=500")
+      {
+        CountL=500;
+
+        Serial.println("Burası LedOff");
+        memset(&Buffer, 0, sizeof(Buffer));
+
+      }
       
         eSerialState = Action;
       break;
@@ -64,13 +89,5 @@ default:
 }
 
 
-void OnOf(int timeHigh, int timeLow ){
-
-        digitalWrite(LED,HIGH);
-        delay(timeHigh);
-        digitalWrite(LED,LOW);
-        delay(timeLow);
 
 
-
-}
