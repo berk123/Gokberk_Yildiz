@@ -1,15 +1,12 @@
 //##------- ESP8266 MCU --------##//
+
 #include <Arduino.h>
 #include "comm.h"
-
-
-
-int32_t LastCounterHolderH, LastCounterHolderL;
 
 enum eSerialStates
 {
   Action = 0,
-  TX_SEND_DATA,
+  Settings,
 };
 
 enum eSerialStates eSerialState;
@@ -24,57 +21,38 @@ void setup()
 
 void loop()
 {
-  
+
   switch (eSerialState)
   {
-  case Action: // First task 
+  case Action: // First task
 
     OnOf(CountH, CountL);
-    
-    eSerialState = TX_SEND_DATA;
+
+    eSerialState = Settings;
     break;
 
-  case TX_SEND_DATA: // Second task
+  case Settings: // Second task
 
-    
-      deneme (Buffer);
-      
-    // if (Buffer == "stop") //  if received data is "stop"
-    // {
-      
-    //   Buffer ="";
+    Led_State_Setting(Buffer);
+    if (Echo(Buffer))
+    {
+      Serial.println(Buffer);
+    }
 
-    //   LastCountHolder(LastCounterHolderH, LastCounterHolderL, CountH, CountL);
+    if (Buffer == "stop" && flag == 1) //  if received data is "stop"
+    {
 
-    //   CountH = 1000;
-    //   CountL = 1000;
+      LastCountHolder(LastCounterHolderH, LastCounterHolderL, CountH, CountL);
+      CountH = 1000;
+      CountL = 1000;
+      flag = 0;
+    }
+    else if (Buffer == "start") // if received data is "start"
+    {
 
-
-    // }
-    // else if (Buffer == "start") // if received data is "start"
-    // {
-    //   Echo(Buffer);
-    //   CountH = LastCounterHolderH;
-    //   CountL = LastCounterHolderL;
-      
-
-    // }
-    // else if (Buffer == "ledon=500") // if received data is "ledon"
-    // {
-    //   CountH = 500;
-
-    //   LastCountHolder(LastCounterHolderH, LastCounterHolderL, CountH, CountL);
-
-    //   Echo(Buffer);
-    // }
-    // else if (Buffer == "ledoff=500") // if received data is "ledoff"
-    // {
-    //   CountL = 500;
-
-    //   LastCountHolder(LastCounterHolderH, LastCounterHolderL, CountH, CountL);
-
-    //   Echo(Buffer);
-    // }
+      CountH = LastCounterHolderH;
+      CountL = LastCounterHolderL;
+    }
 
     eSerialState = Action;
     break;
@@ -82,5 +60,4 @@ void loop()
   default:
     break;
   }
-
 }

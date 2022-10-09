@@ -3,10 +3,13 @@
 String Buffer{""};
 String value;
 String OnHolder;
-String OfHolder;
-int32_t CountH ;
-int32_t CountL ;
+String OffHolder;
+
+int32_t CountH;
+int32_t CountL;
+
 uint32_t i = 0;
+int32_t LastCounterHolderH, LastCounterHolderL;
 
 bool flag;
 int32_t Time;
@@ -108,10 +111,14 @@ void OnOf(int32_t timeHigh, int32_t timeLow)
 }
 
 // Echo Function
-void Echo(String Eword)
+uint8_t Echo(String Eword)
 {
-
-  Serial.println(Eword);
+  if (Eword == "stop" || Eword == "")
+    return 0;
+  else
+  {
+    return 1;
+  }
 }
 
 //  LastCountHolder
@@ -122,77 +129,71 @@ void LastCountHolder(int32_t &a, int32_t &b, int32_t &c, int32_t &d)
   b = d;
 }
 
-void deneme(String deger)
-{ // l e d o n = 5 0 0
+//Led state settings
+void Led_State_Setting(String ReceivedData)
+{
 
-  if (deger != "stop" && deger != "start")
-  { 
-    while ( flag == 1 )
+  if (ReceivedData != "stop" && ReceivedData != "start")
+  {
+    while (flag == 1) // anti-block
     {
-      
-    
-    
-    if (flag == 1)
-    {
-      value += deger[i++];
-      
-      if (value == "led")
-      {
 
-        value = "";
-      }
-      if (value == "on=")
+      if (flag == 1)
       {
-        OnHolder = value;
-        //Serial.println(OnHolder);
-        value = "";
-      }
-      if (value == "off=")
-      {
-        OfHolder = value;
-        //Serial.println(OfHolder);
-        value = "";
-      }
+        value += ReceivedData[i++];
 
-      if( i==deger.length()){
-        
-        flag=0;
-        i=0;
-       
-          if (value.length()==4)
+        if (value == "led")
+        {
+
+          value = "";
+        }
+        if (value == "on=")
+        {
+          OnHolder = value;
+          value = "";
+        }
+        if (value == "off=")
+        {
+          OffHolder = value;
+          value = "";
+        }
+
+        if (i == ReceivedData.length())
+        {
+
+          flag = 0;
+          i = 0;
+
+          if (value.length() == 4) //for four digit numbers
           {
-           
-          Time= ((1000 * (value[0] - 48)) + (100 * (value[1] - 48)) + (10 * (value[2] - 48)) +  (value[3] - 48));
-                    
+
+            Time = ((1000 * (value[0] - 48)) + (100 * (value[1] - 48)) + (10 * (value[2] - 48)) + (value[3] - 48));
           }
-          if (value.length()==3)
+          if (value.length() == 3) //for three digit numbers
           {
-           
-          Time= ((100 * (value[0] - 48)) + (10 * (value[1] - 48)) +  (value[2] - 48));
-          
-          }   
 
-        value ="";
-        break;
+            Time = ((100 * (value[0] - 48)) + (10 * (value[1] - 48)) + (value[2] - 48));
+          }
+
+          value = "";
+          break;
+        }
       }
     }
   }
-  }
 
-  if (OnHolder=="on=")
+  if (OnHolder == "on=") // if received data is "on"
   {
+
+    LastCountHolder(LastCounterHolderH, LastCounterHolderL, CountH, CountL);
     CountH = Time;
-    OnHolder="";
-    Echo(Buffer);
+    OnHolder = "";
   }
 
-  if (OfHolder == "off=")
+  if (OffHolder == "off=") // if received data is "off"
   {
+    LastCountHolder(LastCounterHolderH, LastCounterHolderL, CountH, CountL);
     CountL = Time;
-     OfHolder="";
-    Echo(Buffer);
+    OffHolder = "";
   }
-  
-  
 }
-
